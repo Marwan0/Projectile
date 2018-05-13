@@ -24,7 +24,7 @@ public class ProjectileWrapper : MonoBehaviour
 		this.initialPos2D = this.transform.position;
 
 		this.initialAngle = 30;
-		this.duration = 4;
+		this.duration = 2;
 		this.ratio = 0.5f;
 
 		ConstructProjectile();

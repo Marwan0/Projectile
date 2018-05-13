@@ -159,9 +159,6 @@ public class Projectile
 
 		float duration1 = this.duration * this.ratio * 2;
 		float duration2 = this.duration * (1 - this.ratio) * 2;
-
-		Debug.Log("duration1: "+duration1);
-		Debug.Log("duration2: "+duration2);
 		
 		this.gravity1 = CalculateGravity(projectileDistance1, duration1, this.initialAngle1);
 		this.initialVelocity1 = CalculateVelocity(projectileDistance1, duration1, this.initialAngle1);
@@ -181,7 +178,6 @@ public class Projectile
 		List<ProjectilePoint> projectilePoints = new List<ProjectilePoint>();
 
 		int count1 = (int) (this.duration * ratio / Time.deltaTime);
-		Debug.Log("count1: "+count1);
 
 		for (int i = 0; i < count1; i++)
 		{
@@ -195,7 +191,6 @@ public class Projectile
 		currentProjectileSpentTime = this.duration * (1 - ratio);
 
 		int count2 = (int) ((this.duration -overalTime) / Time.deltaTime);
-		Debug.Log("count2 "+count2);
 
 		for (int i = 0; i < count2; i++)
 		{
