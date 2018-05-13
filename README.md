@@ -1,3 +1,3 @@
 # Projectile
 A C# tool to generate projectile.
-https://github.com/Vintage-game-studio/Projectile
+https://www.youtube.com/watch?v=PdcUMa5aMQw&t=0s
