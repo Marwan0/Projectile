@@ -63,11 +63,13 @@ public class Projectile
 	{
 		public float TimeStamp;
 		public Vector2 Position2D;
+		public int ProjectileId;
 
-		public ProjectilePoint(float timeStamp, Vector2 position2D)
+		public ProjectilePoint(float timeStamp, Vector2 position2D,int projectileId)
 		{
 			TimeStamp = timeStamp;
 			Position2D = position2D;
+			ProjectileId = projectileId;
 		}
 	}
 	
@@ -145,7 +147,7 @@ public class Projectile
 	{
 		float currentProjectileSpentTime = 0;
 		float overalTime = 0;
-		float timeInterval = this.duration / TIME_DIVISION;
+		float timeInterval = Time.deltaTime;
 		
 		Vector2 initialPos2D1 = initialPos2D;
 		Vector2 initialPos2D2 = initialPos2D;
@@ -158,6 +160,9 @@ public class Projectile
 		float duration1 = this.duration * this.ratio * 2;
 		float duration2 = this.duration * (1 - this.ratio) * 2;
 
+		Debug.Log("duration1: "+duration1);
+		Debug.Log("duration2: "+duration2);
+		
 		this.gravity1 = CalculateGravity(projectileDistance1, duration1, this.initialAngle1);
 		this.initialVelocity1 = CalculateVelocity(projectileDistance1, duration1, this.initialAngle1);
 
@@ -175,13 +180,13 @@ public class Projectile
 		
 		List<ProjectilePoint> projectilePoints = new List<ProjectilePoint>();
 
-		while (Math.Abs(overalTime - this.duration * ratio) > 0.001)
-		{
-			Vector3 currentPos = GetPosition(currentProjectileSpentTime, this.initialVelocity1, this.initialAngle1,
-				initialPos2D1, this.gravity1);
+		int count1 = (int) (this.duration * ratio / Time.deltaTime);
+		Debug.Log("count1: "+count1);
 
-			projectilePoints.Add(new ProjectilePoint(overalTime,
-				RotatePointAroundPivot(currentPos, rotationPivot, new Vector3(0, 0, rotationAngle))));
+		for (int i = 0; i < count1; i++)
+		{
+			Vector3 currentPos = GetPosition(currentProjectileSpentTime, this.initialVelocity1, this.initialAngle1, initialPos2D1, this.gravity1);
+			projectilePoints.Add(new ProjectilePoint(overalTime, RotatePointAroundPivot(currentPos, rotationPivot, new Vector3(0, 0, rotationAngle)),0));
 
 			currentProjectileSpentTime += timeInterval;
 			overalTime += timeInterval;
@@ -189,15 +194,18 @@ public class Projectile
 
 		currentProjectileSpentTime = this.duration * (1 - ratio);
 
-		while (this.duration - overalTime > 0.00001)
+		int count2 = (int) ((this.duration -overalTime) / Time.deltaTime);
+		Debug.Log("count2 "+count2);
+
+		for (int i = 0; i < count2; i++)
 		{
 			currentProjectileSpentTime += timeInterval;
 			overalTime += timeInterval;
-
-			Vector3 currentPos = GetPosition(currentProjectileSpentTime, this.initialVelocity2, this.initialAngle2, initialPos2D2, this.gravity2);
+			Vector3 currentPos = GetPosition(currentProjectileSpentTime, this.initialVelocity2, this.initialAngle2,
+				initialPos2D2, this.gravity2);
 
 			projectilePoints.Add(new ProjectilePoint(overalTime,
-				RotatePointAroundPivot(currentPos, rotationPivot, new Vector3(0, 0, rotationAngle))));
+				RotatePointAroundPivot(currentPos, rotationPivot, new Vector3(0, 0, rotationAngle)), 1));
 		}
 
 		if (normalized)
@@ -207,7 +215,7 @@ public class Projectile
 				Vector2 currentPos = pointPair.Position2D;
 				Vector2 normCurrentPos = new Vector2(currentPos.x / totalDistance, currentPos.y / this.height);
 				pointPair.Position2D = RotatePointAroundPivot(normCurrentPos, rotationPivot, new Vector3(0, 0, rotationAngle));
-				projectilePoints[index] = new ProjectilePoint(pointPair.TimeStamp, pointPair.Position2D);
+				projectilePoints[index] = new ProjectilePoint(pointPair.TimeStamp, pointPair.Position2D,pointPair.ProjectileId);
 			}
 
 		return projectilePoints;

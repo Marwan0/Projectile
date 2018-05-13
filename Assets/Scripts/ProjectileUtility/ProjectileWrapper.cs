@@ -4,68 +4,126 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ProjectileWrapper : MonoBehaviour
 {
-	public float InitialAngle;
-	public float Duration;
+	private float initialAngle;
+	private float duration;
+	private float ratio;
 	public Transform TargetTransform;
 
 	private Projectile projectile;
 	private Vector2 initialPos2D;
-	List<Vector2> pointsVec2=new List<Vector2>();
 	private bool isMoving;
+	private List<Projectile.ProjectilePoint> projectilePoints;
 	
 	void Start ()
 	{
+		projectilePoints=new List<Projectile.ProjectilePoint>();
 		this.initialPos2D = this.transform.position;
-		
+
+		this.initialAngle = 30;
+		this.duration = 4;
+		this.ratio = 0.5f;
+
+		ConstructProjectile();
+		TargetMovement.OnPositionChanged += ResetAnimation;
+	}
+
+	public void SetAngle(Slider slider)
+	{
+		this.initialAngle = slider.value;
+		Debug.Log(this.initialAngle);
+		ResetAnimation();
+	}
+
+	public void SetDuration(Slider slider)
+	{
+		this.duration = slider.value;
+		ResetAnimation();
+	}
+	
+	public void SetRatio(Slider slider)
+	{
+		this.ratio = slider.value/100f;
+		ResetAnimation();
+	}
+	
+	public void SetTargetY(Slider slider)
+	{
+		this.TargetTransform.position=new Vector3(0,slider.value,0);
+		ResetAnimation();
+	}
+	
+	public void SetTargetX(Slider slider)
+	{
+		this.TargetTransform.position=new Vector3(slider.value,0,0);
+		ResetAnimation();
+	}
+	
+	private void ConstructProjectile()
+	{
 		Projectile.InitialAngleDuration initialAngleDuration = new Projectile.InitialAngleDuration();
-		initialAngleDuration.InitAngle = this.InitialAngle;
-		initialAngleDuration.Duration = this.Duration;
-		
-		projectile = new Projectile(0.6f,initialAngleDuration);
-		TargetMovement.OnPositionChanged += StopAnimation;
+		initialAngleDuration.InitAngle = this.initialAngle;
+		initialAngleDuration.Duration = this.duration;
+
+		projectile = new Projectile(this.ratio, initialAngleDuration);
+		projectilePoints = projectile.GetProjectileSamples(this.initialPos2D, this.TargetTransform.position);
+		Debug.Log(projectilePoints.Count);
 	}
 
 	void FixedUpdate () {
-		
 		if (!this.isMoving)
-		{
-			List<Projectile.ProjectilePoint> projectilePoints = projectile.GetProjectileSamples(this.initialPos2D,this.TargetTransform.position);
-			pointsVec2 = projectilePoints.Select(s => s.Position2D).ToList();
 			StartCoroutine(Animate());
-		}
 	}
 
-	private void StopAnimation()
+	void Update()
+	{
+		
+	}
+	public void ResetAnimation()
 	{
 		this.isMoving=false;
 		StopAllCoroutines();
+		ConstructProjectile();
 	}
 
 	IEnumerator Animate()
 	{
 		this.isMoving = true;
+		List<Vector2> pointsVec2=projectilePoints.Select(s=>s.Position2D).ToList();
+		Vector2 currentPos = pointsVec2[0];
+		float timeInterval = this.duration / 100f;
+		float currentTime = 0;
+		int currentIndex = 0;
 
-		for (int i = 0; i < this.pointsVec2.Count; i++)
+		for (var i = 0; i < pointsVec2.Count; i++)
 		{
-			this.transform.position = this.pointsVec2[i];
+			transform.position = pointsVec2[i];
 			yield return null;
 		}
+
 		this.isMoving = false;
-		this.transform.position = this.pointsVec2[0];
+		this.transform.position = pointsVec2[0];
 	}
 	
 	void OnDrawGizmos()
 	{
-		for (int i = 0; i < this.pointsVec2.Count-1; i++)
+		if (this.projectilePoints==null || this.projectilePoints.Count==0) return;
+
+		for (int i = 0; i < this.projectilePoints.Count-1; i++)
 		{
+			if (projectilePoints[i].ProjectileId == 0)
+				Gizmos.color = Color.green;
+			else
+				Gizmos.color = Color.red;
+			
 			if (i%2==0)
-			Gizmos.DrawLine(this.pointsVec2[i],this.pointsVec2[i+1]);
+			Gizmos.DrawLine(this.projectilePoints[i].Position2D,this.projectilePoints[i+1].Position2D);
 		}
 		
-		Gizmos.color=Color.magenta;
+		Gizmos.color=Color.blue;
 		Gizmos.DrawLine(this.initialPos2D,this.TargetTransform.position);
 	}
 }
