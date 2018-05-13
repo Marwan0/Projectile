@@ -8,11 +8,11 @@ using UnityEngine.UI;
 
 public class ProjectileWrapper : MonoBehaviour
 {
+	public Transform TargetTransform;
+	
 	private float initialAngle;
 	private float duration;
 	private float ratio;
-	public Transform TargetTransform;
-
 	private Projectile projectile;
 	private Vector2 initialPos2D;
 	private bool isMoving;
@@ -70,7 +70,6 @@ public class ProjectileWrapper : MonoBehaviour
 
 		projectile = new Projectile(this.ratio, initialAngleDuration);
 		projectilePoints = projectile.GetProjectileSamples(this.initialPos2D, this.TargetTransform.position);
-		Debug.Log(projectilePoints.Count);
 	}
 
 	void FixedUpdate () {
@@ -93,10 +92,6 @@ public class ProjectileWrapper : MonoBehaviour
 	{
 		this.isMoving = true;
 		List<Vector2> pointsVec2=projectilePoints.Select(s=>s.Position2D).ToList();
-		Vector2 currentPos = pointsVec2[0];
-		float timeInterval = this.duration / 100f;
-		float currentTime = 0;
-		int currentIndex = 0;
 
 		for (var i = 0; i < pointsVec2.Count; i++)
 		{
@@ -117,7 +112,7 @@ public class ProjectileWrapper : MonoBehaviour
 			if (projectilePoints[i].ProjectileId == 0)
 				Gizmos.color = Color.green;
 			else
-				Gizmos.color = Color.red;
+				Gizmos.color = Color.magenta;
 			
 			if (i%2==0)
 			Gizmos.DrawLine(this.projectilePoints[i].Position2D,this.projectilePoints[i+1].Position2D);
